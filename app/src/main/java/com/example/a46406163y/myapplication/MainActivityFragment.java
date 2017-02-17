@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,11 @@ import java.util.Date;
 public class MainActivityFragment extends Fragment {
 
 
-    Button bttnfoto;
+    private Button bttnfoto;
+    private String mCurrentPhotoPath;
+
+    private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final int ACTIVITAT_SELECCIONAR_IMATGE = 1;
 
     public MainActivityFragment() {
     }
@@ -38,62 +43,68 @@ public class MainActivityFragment extends Fragment {
         bttnfoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    createImageFile();
+
                     dispatchTakePictureIntent();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
             }
         });
-
-
-
         return view;
 
     }
 
-    String mCurrentPhotoPath;
 
-    private File createImageFile() throws IOException {
+
+    private File createImageFile(int requestTakePhoto)  {
+
+        Log.d( "DEBBUG-3", "ENTRA CREATEIMAGEFILE");
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        Log.d( "DEBBUG-4", timeStamp);
         String imageFileName = "JPEG_" + timeStamp + "_";
+        Log.d( "DEBBUG-5", imageFileName);
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
+        Log.d( "DEBBUG-6", storageDir.getAbsolutePath());
+        File image = null;
+        try {
+            image = File.createTempFile(
+                    imageFileName,
+                    ".jpg",
+                    storageDir
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d( "DEBBUG-7", "ENTRA CREATEIMAGEFILE");
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        Log.d("DEBBUG--", mCurrentPhotoPath);
         return image;
     }
 
-    static final int REQUEST_TAKE_PHOTO = 1;
+
 
     private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
 
-            }
-            // Continue only if the File was successfully created
+        Log.d("DEBBUG-1", "entra al metode");
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
+
+            Log.d("DEBUGG-2", "ENTRA AL IF");
+            File photoFile = null;
+            photoFile = createImageFile(REQUEST_TAKE_PHOTO);
+
             if (photoFile != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                Log.d("DEBUGGGGING", "KKKK");
             }
         }
     }
+
 
 
 }
