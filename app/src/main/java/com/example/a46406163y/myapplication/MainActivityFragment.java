@@ -25,10 +25,13 @@ public class MainActivityFragment extends Fragment {
 
 
     private Button bttnfoto;
+    private Button bttnvideo;
     private String mCurrentPhotoPath;
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int ACTIVITAT_SELECCIONAR_IMATGE = 1;
+    private static final int REQUEST_TAKE_VIDEO = 2;
+    private Uri fileUri;;
 
     public MainActivityFragment() {
     }
@@ -39,6 +42,7 @@ public class MainActivityFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         bttnfoto =(Button) view.findViewById(R.id.bttnFoto);
+        bttnvideo = (Button) view.findViewById(R.id.btVideo);
 
         bttnfoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,6 +52,16 @@ public class MainActivityFragment extends Fragment {
 
             }
         });
+
+        bttnvideo.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public  void onClick(View v){
+
+                dispatchTakeVideoIntent();
+
+            }
+        });
+
         return view;
 
     }
@@ -56,15 +70,14 @@ public class MainActivityFragment extends Fragment {
 
     private File createImageFile(int requestTakePhoto)  {
 
-        Log.d( "DEBBUG-3", "ENTRA CREATEIMAGEFILE");
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        Log.d( "DEBBUG-4", timeStamp);
+
         String imageFileName = "JPEG_" + timeStamp + "_";
-        Log.d( "DEBBUG-5", imageFileName);
+
         File storageDir = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES);
-        Log.d( "DEBBUG-6", storageDir.getAbsolutePath());
+
         File image = null;
         try {
             image = File.createTempFile(
@@ -75,24 +88,50 @@ public class MainActivityFragment extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d( "DEBBUG-7", "ENTRA CREATEIMAGEFILE");
+
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        Log.d("DEBBUG--", mCurrentPhotoPath);
+
         return image;
     }
 
+    private File createVideoFile(int requestTakeVideo)  {
 
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+
+        String videoFileName = "MP4_" + timeStamp + "_";
+
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+
+        File video = null;
+        try {
+            video = File.createTempFile(
+                    videoFileName,
+                    ".mp4",
+                    storageDir
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + video.getAbsolutePath();
+
+        return video;
+    }
 
     private void dispatchTakePictureIntent() {
 
-        Log.d("DEBBUG-1", "entra al metode");
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
 
-            Log.d("DEBUGG-2", "ENTRA AL IF");
+
             File photoFile = null;
             photoFile = createImageFile(REQUEST_TAKE_PHOTO);
 
@@ -100,11 +139,29 @@ public class MainActivityFragment extends Fragment {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-                Log.d("DEBUGGGGING", "KKKK");
+
             }
         }
     }
 
+    private void dispatchTakeVideoIntent() {
 
+
+        Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+        if (takeVideoIntent.resolveActivity(getContext().getPackageManager()) != null) {
+
+
+            File videoFile = null;
+            videoFile = createVideoFile(REQUEST_TAKE_VIDEO);
+
+            if (videoFile != null) {
+                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                        Uri.fromFile(videoFile));
+                startActivityForResult(takeVideoIntent, REQUEST_TAKE_VIDEO);
+
+            }
+        }
+    }
 
 }
